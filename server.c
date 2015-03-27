@@ -1,64 +1,53 @@
-#include <errno.h>
 #include <stdio.h>
+#include <netdb.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <stdlib.h>
-#include <string.h>
-#include <netdb.h>
+
 
 int main() {
-  struct addrinfo hints, *res;
-  int sockfd;
-
-  memset(&hints, 0, sizeof hints);
-  
-  hints.ai_family = AF_UNSPEC;
+  struct addrinfo hints;
+  //hints will be passed into getaddrinfo and specify some 
+  //criteria for getaddrinfo to return into res.
+  memset(&hints, 0, sizeof hints); //Make sure hints is empty
+  hints.ai_family = AF_UNSPEC; //I don't care if it is IPv4 or IPv6
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = AI_PASSIVE;
+  hints.ai_flags = AI_PASSIVE; //bind to the IP of the host I am on
 
-  getaddrinfo(NULL, "5999", &hints, &res);
-  //STEP 1 socket
+  struct addrinfo *res;
+  if(getaddrinfo(NULL, "6000", &hints, &res) != 0) {
+    perror("getaddrinfo");
+  }
+  
+  int sockfd; //socket file descriptor
+  //I should error check this in the future
   sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-  int i = 1;
+  
 
-  //step 1a
-  if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof i) == -1) {
-    printf("rekt\n");
-    perror(NULL);
-    exit(-1);
-  }
+  //the port number is used to match the incoming packet to a certain
+  //process's file descriptor
+  //bind: associate the socket to a port on the machine
+  //that port is inside of res->ai_addr
+  bind(sockfd, res->ai_addr, res->ai_addrlen);
 
-  //step 2 bind
-  if(bind(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
-    perror(NULL);
-    exit(-1);
-  } 
+  listen(sockfd, 1);
 
-  //step 3 listen
-  if(listen(sockfd, 1) == -1) {
-    perror(NULL);
-    exit(-1);
+  //accept
 
-  }
-
+  int new_fd;
   struct sockaddr_storage their_addr;
   socklen_t addr_size = sizeof their_addr;
-  printf("ha\n");
-
-  //step 4 accept
-  int new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-
-  char *lel = "hi i am angel\n";
-  int bytes_sent = send(new_fd, lel, strlen(lel), 0);
-
-  char lel2[20];
-  recv(new_fd, lel2, sizeof lel2, 0);
+  new_fd = accept(sockfd, (struct sockaddr *) &their_addr, &addr_size);
   
-  printf("%s\n", lel2);
-  
-  printf("ho\n");
+  //send something!
+  char *msg = "welcome to angels server!\n";
+  send(new_fd, msg , strlen(msg),0 );
+
+  //receive something!
+  char buffer[20];
+  recv(new_fd, buffer, sizeof buffer, 0);
+  printf("client>> %s\n", buffer);
  
-  
 
   return 0;
 }
