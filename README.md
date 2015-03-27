@@ -1,2 +1,2 @@
 # s
-sockets in c++
+sockets in C
