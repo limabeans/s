@@ -1,2 +1,7 @@
 # s
-sockets in C
+
+* `./server`
+* `lsof -i` (server is listening)
+* `netcat localhost 6000`
+  
+:^)
