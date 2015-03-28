@@ -4,8 +4,13 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-
-int main() {
+int main( int argc, char *argv[]) {
+  if(argc != 3) {
+    printf("Usage: ./server [destination] [port number]\n");
+    return 1;
+  }
+  char *DEST = argv[1];
+  char *PORT_NUM = arvg[2];
   struct addrinfo hints;
   //hints will be passed into getaddrinfo and specify some 
   //criteria for getaddrinfo to return into res.
