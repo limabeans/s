@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <netdb.h>
 #include <string.h>
 #include <sys/types.h>
@@ -9,8 +10,13 @@ int main( int argc, char *argv[]) {
     printf("Usage: ./server [destination] [port number]\n");
     return 1;
   }
-  char *DEST = argv[1];
-  char *PORT_NUM = arvg[2];
+  char *PORT_NUM = argv[2];
+  if(atoi(PORT_NUM) < 1023) {
+    printf("port number must be greater than 1023\n");
+    return 1;
+  }
+  //char *DEST = argv[1];
+
   struct addrinfo hints;
   //hints will be passed into getaddrinfo and specify some 
   //criteria for getaddrinfo to return into res.
@@ -20,7 +26,7 @@ int main( int argc, char *argv[]) {
   hints.ai_flags = AI_PASSIVE; //bind to the IP of the host I am on
 
   struct addrinfo *res;
-  if(getaddrinfo(NULL, "6000", &hints, &res) != 0) {
+  if(getaddrinfo(NULL, PORT_NUM, &hints, &res) != 0) {
     perror("getaddrinfo");
   }
   
